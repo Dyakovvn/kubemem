@@ -2,6 +2,10 @@
 #include "stdio.h"
 #include "kubemem.h"
 
+inline bool file_exists (const std::string& name) {
+    return ( access( name.c_str(), F_OK ) != -1 );
+}
+
 unsigned long parse_byte_file(char *path) {
   FILE *file = fopen(path, "r");
   if(file == NULL) {
@@ -19,8 +23,12 @@ unsigned long parse_byte_file(char *path) {
 }
 
 double free_ram_ratio() {
-  double used_bytes = (double) parse_byte_file(CGROUP_BYTES_USED);
-  double bytes_limit = (double) parse_byte_file(CGROUP_BYTES_LIMIT);
-  
+  if (file_exists(CGROUPV2_BYTES_LIMIT)) {
+    double used_bytes = (double) parse_byte_file(CGROUPV2_BYTES_USED);
+    double bytes_limit = (double) parse_byte_file(CGROUPV2_BYTES_LIMIT);
+  } else {
+    double used_bytes = (double) parse_byte_file(CGROUP_BYTES_USED);
+    double bytes_limit = (double) parse_byte_file(CGROUP_BYTES_LIMIT);
+  }
   return used_bytes / bytes_limit;
 }
